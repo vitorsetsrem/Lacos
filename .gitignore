@@ -1,0 +1,6 @@
+# Scripts com credenciais
+setup_e_teste.ps1
+
+# Variáveis de ambiente
+.env
+*.env
