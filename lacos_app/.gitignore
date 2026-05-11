@@ -1,9 +1,152 @@
+# =============================================
+# LAÇO'S - MINHA SAÚDE FEMININA
+# .gitignore - Proteção de Segurança do Projeto
+# =============================================
+
+# =============================================
+# ARQUIVOS SENSÍVEIS - NUNCA VERSIONAR!
+# =============================================
+
+# Variáveis de ambiente (chaves Supabase, API keys, secrets)
+.env
+.env.*
+*.env
+!.env.example
+
+# Android signing keys (chaves de assinatura APK/AAB)
+*.jks
+*.keystore
+*.keystore.p12
+key.properties
+/android/key.properties
+/android/app/*.jks
+/android/app/*.keystore
+
+# iOS certificates e provisioning profiles
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+/ios/*.mobileprovision
+/ios/Runner/ExportOptions.plist
+
+# Google Services (Firebase/Analytics)
+google-services.json
+GoogleService-Info.plist
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist
+
+# Scripts com credenciais
+setup_e_teste.ps1
+*.secret
+*.credentials
+
+# Tokens e sessões
+*.token
+*.session
+
+# =============================================
+# BUILD OUTPUTS (APK / AAB / IPA)
+# =============================================
+
+# Android build outputs
+/build/
+/android/app/build/
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+*.apk
+*.aab
+
+# iOS build outputs
+/ios/build/
+/ios/Pods/
+*.ipa
+*.dSYM.zip
+*.dSYM
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Runner/GeneratedPluginRegistrant.*
+
+# =============================================
+# FLUTTER / DART
+# =============================================
+
+# Flutter/Dart/Pub related
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+*.dart.js
+*.js_
+*.js.deps
+*.js.map
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# =============================================
+# IDE E EDITORES
+# =============================================
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+.idea/workspace.xml
+.idea/libraries/
+
+# VS Code
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.code-workspace
+
+# =============================================
+# SISTEMA OPERACIONAL
+# =============================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# =============================================
+# DIVERSOS
+# =============================================
+
 # Miscellaneous
 *.class
 *.log
 *.pyc
 *.swp
-.DS_Store
+*.swo
+*.tmp
+*.bak
 .atom/
 .build/
 .buildlog/
@@ -12,77 +155,20 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-# =============================================
-# SENSÍVEL - Não versionar!
-# =============================================
-
-# Variáveis de ambiente (chaves Supabase, secrets)
-.env
-.env.local
-.env.production
-.env.staging
-*.env
-
-# Android signing keys
-*.jks
-*.keystore
-key.properties
-/android/key.properties
-
-# Local properties (contém caminhos do SDK local)
+# Local properties (caminhos SDK locais)
 /android/local.properties
+/ios/Flutter/Generated.xcconfig
+/ios/.symlinks/
 
-# Scripts de setup com credenciais
-setup_e_teste.ps1
-
-# Google Services (Firebase/AdMob se adicionado)
-google-services.json
-GoogleService-Info.plist
-
-# IDE secrets
-.vscode/settings.json
-.idea/workspace.xml
-
-# Arquivos de banco de dados local
+# Banco de dados local
 *.db
 *.sqlite
+*.sqlite3
+*.hive
 
-# Logs
-*.log
+# Crashlytics
+crashlytics-build.properties
 
-# OS generated
-.DS_Store
-Thumbs.db
-desktop.ini
+# Node (caso use ferramentas JS)
+node_modules/
+package-lock.json

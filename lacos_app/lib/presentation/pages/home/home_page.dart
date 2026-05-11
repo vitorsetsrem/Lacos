@@ -5,6 +5,10 @@ import '../dashboard/dashboard_page.dart';
 import '../ciclo/ciclo_page.dart';
 import '../conteudos/conteudos_page.dart';
 import '../perfil/perfil_page.dart';
+import '../lembretes/lembretes_page.dart';
+import '../chat/chat_page.dart';
+import '../apoio/rede_apoio_page.dart';
+import '../analise/analise_ciclo_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -176,21 +180,43 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             _buildQuickAddOption(
-              icon: Icons.healing_rounded,
-              label: 'Registrar Sintoma',
-              color: AppColors.primaryLilas,
+              icon: Icons.notifications_active_rounded,
+              label: 'Meus Lembretes',
+              color: AppColors.salmon,
               onTap: () {
                 Navigator.pop(context);
-                // TODO: abrir registro de sintoma
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const LembretesPage()));
               },
             ),
             _buildQuickAddOption(
-              icon: Icons.notifications_active_rounded,
-              label: 'Criar Lembrete',
+              icon: Icons.analytics_rounded,
+              label: 'Análise do Ciclo',
+              color: AppColors.primaryLilas,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AnaliseCicloPage()));
+              },
+            ),
+            _buildQuickAddOption(
+              icon: Icons.chat_bubble_rounded,
+              label: 'Perguntas Anônimas',
               color: AppColors.warning,
               onTap: () {
                 Navigator.pop(context);
-                // TODO: abrir criação de lembrete
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ChatPage()));
+              },
+            ),
+            _buildQuickAddOption(
+              icon: Icons.volunteer_activism_rounded,
+              label: 'Rede de Apoio',
+              color: AppColors.success,
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const RedeApoioPage()));
               },
             ),
             const SizedBox(height: 12),

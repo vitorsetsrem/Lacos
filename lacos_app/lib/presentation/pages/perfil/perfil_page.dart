@@ -8,6 +8,10 @@ import '../../../data/datasources/supabase_datasource.dart';
 import '../../../data/models/usuaria_model.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../initial_page.dart';
+import '../lembretes/lembretes_page.dart';
+import '../chat/chat_page.dart';
+import '../apoio/rede_apoio_page.dart';
+import '../analise/analise_ciclo_page.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -163,16 +167,41 @@ class _PerfilPageState extends State<PerfilPage> {
                   ),
                   _buildMenuItem(
                     icon: Icons.notifications_outlined,
-                    title: 'Notificações',
+                    title: 'Meus Lembretes',
                     onTap: () {
-                      // TODO: configurações de notificação
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const LembretesPage()));
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.analytics_rounded,
+                    title: 'Análise do Ciclo',
+                    onTap: () {
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const AnaliseCicloPage()));
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: 'Perguntas Anônimas',
+                    onTap: () {
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const ChatPage()));
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.volunteer_activism_rounded,
+                    title: 'Rede de Apoio',
+                    onTap: () {
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const RedeApoioPage()));
                     },
                   ),
                   _buildMenuItem(
                     icon: Icons.lock_outline_rounded,
                     title: 'Privacidade',
                     onTap: () {
-                      // TODO: política de privacidade
+                      // TODO: exibir política de privacidade
                     },
                   ),
                   _buildMenuItem(

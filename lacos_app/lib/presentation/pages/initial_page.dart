@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/widgets/gradient_button.dart';
 import 'auth/login_page.dart';
 
@@ -47,11 +48,8 @@ class InitialPage extends StatelessWidget {
 
                 Text(
                   AppStrings.appName,
-                  style: TextStyle(
+                  style: AppTheme.decorativeTitle.copyWith(
                     fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryPink,
-                    letterSpacing: 2,
                   ),
                 ),
                 const SizedBox(height: 4),

@@ -10,7 +10,14 @@ import 'presentation/pages/home/home_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: ".env");
+  // Carrega variáveis de ambiente de forma segura
+  // O arquivo .env NÃO é incluído no bundle do app (segurança)
+  await dotenv.load(fileName: ".env", isOptional: true);
+
+  final supabaseUrl = dotenv.env['SUPABASE_URL'] ??
+      const String.fromEnvironment('SUPABASE_URL');
+  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ??
+      const String.fromEnvironment('SUPABASE_ANON_KEY');
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -24,10 +31,12 @@ Future<void> main() async {
     ),
   );
 
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+  if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+  }
 
   runApp(const LacosApp());
 }

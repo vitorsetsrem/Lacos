@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/theme/app_theme.dart';
 import 'initial_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -105,11 +106,8 @@ class _SplashPageState extends State<SplashPage>
                       const SizedBox(height: 24),
                       Text(
                         AppStrings.appName,
-                        style: TextStyle(
+                        style: AppTheme.decorativeTitle.copyWith(
                           fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primaryPink,
-                          letterSpacing: 2,
                         ),
                       ),
                       const SizedBox(height: 8),
