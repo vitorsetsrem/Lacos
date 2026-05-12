@@ -7,6 +7,9 @@
 # ARQUIVOS SENSÍVEIS - NUNCA VERSIONAR!
 # =============================================
 
+# Documentação interna (NÃO versionar)
+MANUAL_INTERNO.md
+
 # Variáveis de ambiente (chaves Supabase, API keys, secrets)
 .env
 .env.*

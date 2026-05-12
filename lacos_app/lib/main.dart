@@ -55,9 +55,13 @@ class LacosApp extends StatelessWidget {
   }
 
   Widget _getInitialPage() {
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      return const HomePage();
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        return const HomePage();
+      }
+    } catch (_) {
+      // Supabase não inicializado - segue para splash
     }
     return const SplashPage();
   }

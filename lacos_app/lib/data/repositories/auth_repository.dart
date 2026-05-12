@@ -40,9 +40,31 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      return await _datasource.signIn(email: email, password: password);
+      final response = await _datasource.signIn(email: email, password: password);
+
+      // Garante que o perfil existe na tabela usuarias
+      if (response.user != null) {
+        await _ensureUsuariaExists(response.user!, email);
+      }
+
+      return response;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<void> _ensureUsuariaExists(User user, String email) async {
+    try {
+      final existing = await _datasource.getUsuaria(user.id);
+      if (existing == null) {
+        await _datasource.createUsuaria(
+          id: user.id,
+          nome: email.split('@').first,
+          email: email,
+        );
+      }
+    } catch (_) {
+      // Ignora se já existe ou falhar
     }
   }
 
