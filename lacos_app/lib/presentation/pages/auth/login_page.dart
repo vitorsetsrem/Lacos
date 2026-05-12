@@ -68,9 +68,7 @@ class _LoginPageState extends State<LoginPage> {
         _errorMessage = 'Ocorreu um erro. Tente novamente.';
       });
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -81,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
     if (message.contains('Email not confirmed')) {
       return 'Confirme seu e-mail antes de acessar.';
     }
-    if (message.contains('Too many requests')) {
+    if (message.contains('rate limit')) {
       return 'Muitas tentativas. Aguarde um momento.';
     }
     return 'Erro ao fazer login. Tente novamente.';
@@ -101,7 +99,20 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Column(
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
+
+                // Voltar
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.arrow_back_ios_rounded,
+                      color: AppColors.primaryPink,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 // Logo
                 Container(
@@ -124,26 +135,24 @@ class _LoginPageState extends State<LoginPage> {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
                 Text(
-                  AppStrings.appName,
+                  'Bem-vinda de volta!',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: AppColors.primaryPink,
-                    letterSpacing: 1.5,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Acesse sua conta',
+                  'Acesse sua conta para continuar',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
                 ),
-
                 const SizedBox(height: 40),
 
                 // Formulário
@@ -151,7 +160,6 @@ class _LoginPageState extends State<LoginPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      // E-mail
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -174,7 +182,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Senha
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
@@ -192,18 +199,14 @@ class _LoginPageState extends State<LoginPage> {
                               color: AppColors.textLight,
                             ),
                             onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
+                              setState(
+                                  () => _obscurePassword = !_obscurePassword);
                             },
                           ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Informe sua senha';
-                          }
-                          if (value.length < 6) {
-                            return 'A senha deve ter pelo menos 6 caracteres';
                           }
                           return null;
                         },
@@ -217,17 +220,19 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // TODO: implementar recuperação de senha
+                      // TODO: recuperar senha
                     },
                     child: Text(
                       AppStrings.esqueceuSenha,
                       style: TextStyle(
-                        fontSize: 12,
                         color: AppColors.primaryLilas,
+                        fontSize: 13,
                       ),
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 8),
 
                 // Erro
                 if (_errorMessage != null) ...[
@@ -257,8 +262,6 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 16),
                 ],
 
-                const SizedBox(height: 8),
-
                 // Botão Login
                 GradientButton(
                   text: AppStrings.login,
@@ -266,15 +269,14 @@ class _LoginPageState extends State<LoginPage> {
                   isLoading: _isLoading,
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
 
                 // Link para cadastro
                 GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const RegisterPage(),
-                      ),
+                          builder: (_) => const RegisterPage()),
                     );
                   },
                   child: RichText(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../core/widgets/gradient_button.dart';
 import '../../../core/widgets/legal_disclaimer.dart';
 import '../../../data/datasources/supabase_datasource.dart';
 import '../../../data/models/usuaria_model.dart';
@@ -12,6 +11,9 @@ import '../lembretes/lembretes_page.dart';
 import '../chat/chat_page.dart';
 import '../apoio/rede_apoio_page.dart';
 import '../analise/analise_ciclo_page.dart';
+import 'editar_perfil_page.dart';
+import 'notificacoes_page.dart';
+import 'privacidade_page.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -161,8 +163,18 @@ class _PerfilPageState extends State<PerfilPage> {
                   _buildMenuItem(
                     icon: Icons.person_outline_rounded,
                     title: 'Editar Perfil',
+                    onTap: () async {
+                      final updated = await Navigator.push<bool>(context,
+                        MaterialPageRoute(builder: (_) => const EditarPerfilPage()));
+                      if (updated == true) _loadProfile();
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notificações',
                     onTap: () {
-                      // TODO: editar perfil
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const NotificacoesPage()));
                     },
                   ),
                   _buildMenuItem(
@@ -201,7 +213,8 @@ class _PerfilPageState extends State<PerfilPage> {
                     icon: Icons.lock_outline_rounded,
                     title: 'Privacidade',
                     onTap: () {
-                      // TODO: exibir política de privacidade
+                      Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const PrivacidadePage()));
                     },
                   ),
                   _buildMenuItem(

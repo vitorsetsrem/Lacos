@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/legal_disclaimer.dart';
 import '../../../data/models/conteudo_model.dart';
 

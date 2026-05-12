@@ -5,7 +5,6 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/legal_disclaimer.dart';
 import '../../../data/datasources/supabase_datasource.dart';
 import '../../../data/models/conteudo_model.dart';
-import '../../../data/repositories/conteudo_repository.dart';
 import 'conteudo_detail_page.dart';
 
 class ConteudosPage extends StatefulWidget {
@@ -16,38 +15,25 @@ class ConteudosPage extends StatefulWidget {
 }
 
 class _ConteudosPageState extends State<ConteudosPage> {
-  late final ConteudoRepository _repository;
+  late final SupabaseDatasource _datasource;
   List<ConteudoModel> _conteudos = [];
+  String? _categoriaSelecionada;
   bool _isLoading = true;
-  String? _selectedCategoria;
-
-  final Map<String, IconData> _categoryIcons = {
-    'Saúde Ginecológica': Icons.favorite_rounded,
-    'Ciclo Menstrual': Icons.water_drop_rounded,
-    'Saúde Preventiva': Icons.shield_rounded,
-    'Saúde Emocional/Hormonal': Icons.psychology_rounded,
-    'Fases da Vida': Icons.auto_awesome_rounded,
-    'Violência Contra a Mulher': Icons.security_rounded,
-    'Autocuidado': Icons.spa_rounded,
-  };
 
   @override
   void initState() {
     super.initState();
-    final datasource = SupabaseDatasource(Supabase.instance.client);
-    _repository = ConteudoRepository(datasource);
+    _datasource = SupabaseDatasource(Supabase.instance.client);
     _loadConteudos();
   }
 
   Future<void> _loadConteudos() async {
     setState(() => _isLoading = true);
     try {
-      if (_selectedCategoria != null) {
-        _conteudos =
-            await _repository.getConteudosByCategoria(_selectedCategoria!);
-      } else {
-        _conteudos = await _repository.getConteudos();
-      }
+      final data = _categoriaSelecionada != null
+          ? await _datasource.getConteudosByCategoria(_categoriaSelecionada!)
+          : await _datasource.getConteudos();
+      _conteudos = data.map((json) => ConteudoModel.fromJson(json)).toList();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -77,66 +63,22 @@ class _ConteudosPageState extends State<ConteudosPage> {
       ),
       body: Column(
         children: [
-          // Filtro por categoria
+          // Filtro de categorias
           SizedBox(
             height: 44,
-            child: ListView.builder(
+            child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: AppStrings.categorias.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  final isSelected = _selectedCategoria == null;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: const Text('Todos'),
-                      selected: isSelected,
-                      selectedColor: AppColors.primaryPink.withOpacity(0.2),
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        color: isSelected
-                            ? AppColors.primaryPink
-                            : AppColors.textSecondary,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                      onSelected: (_) {
-                        setState(() => _selectedCategoria = null);
-                        _loadConteudos();
-                      },
-                    ),
-                  );
-                }
-
-                final categoria = AppStrings.categorias[index - 1];
-                final isSelected = _selectedCategoria == categoria;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(categoria),
-                    selected: isSelected,
-                    selectedColor: AppColors.primaryPink.withOpacity(0.2),
-                    labelStyle: TextStyle(
-                      fontSize: 12,
-                      color: isSelected
-                          ? AppColors.primaryPink
-                          : AppColors.textSecondary,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                    onSelected: (_) {
-                      setState(() => _selectedCategoria = categoria);
-                      _loadConteudos();
-                    },
-                  ),
-                );
-              },
+              children: [
+                _buildFilterChip('Todos', null),
+                ...AppStrings.categorias
+                    .map((cat) => _buildFilterChip(cat, cat)),
+              ],
             ),
           ),
           const SizedBox(height: 8),
 
-          // Lista
+          // Lista de conteúdos
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -144,18 +86,9 @@ class _ConteudosPageState extends State<ConteudosPage> {
                         color: AppColors.primaryPink))
                 : _conteudos.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.menu_book_rounded,
-                                size: 64,
-                                color:
-                                    AppColors.primaryLilas.withOpacity(0.3)),
-                            const SizedBox(height: 12),
-                            Text('Nenhum conteúdo encontrado',
-                                style: TextStyle(
-                                    color: AppColors.textSecondary)),
-                          ],
+                        child: Text(
+                          'Nenhum conteúdo encontrado.',
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
                       )
                     : ListView.builder(
@@ -165,9 +98,7 @@ class _ConteudosPageState extends State<ConteudosPage> {
                           if (index == _conteudos.length) {
                             return const LegalDisclaimer();
                           }
-
-                          final conteudo = _conteudos[index];
-                          return _buildConteudoCard(conteudo);
+                          return _buildConteudoCard(_conteudos[index]);
                         },
                       ),
           ),
@@ -176,13 +107,36 @@ class _ConteudosPageState extends State<ConteudosPage> {
     );
   }
 
-  Widget _buildConteudoCard(ConteudoModel conteudo) {
-    final icon =
-        _categoryIcons[conteudo.categoria] ?? Icons.article_rounded;
+  Widget _buildFilterChip(String label, String? categoria) {
+    final isSelected = _categoriaSelecionada == categoria;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: isSelected ? Colors.white : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+        selected: isSelected,
+        selectedColor: AppColors.primaryPink,
+        backgroundColor: Colors.white,
+        checkmarkColor: Colors.white,
+        onSelected: (_) {
+          setState(() => _categoriaSelecionada = categoria);
+          _loadConteudos();
+        },
+      ),
+    );
+  }
 
+  Widget _buildConteudoCard(ConteudoModel conteudo) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
+        Navigator.push(
+          context,
           MaterialPageRoute(
             builder: (_) => ConteudoDetailPage(conteudo: conteudo),
           ),
@@ -208,10 +162,13 @@ class _ConteudosPageState extends State<ConteudosPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
+                color: AppColors.primaryLilas.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
+              child: Icon(
+                Icons.menu_book_rounded,
+                color: AppColors.primaryLilas,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -232,7 +189,6 @@ class _ConteudosPageState extends State<ConteudosPage> {
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.primaryLilas,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   if (conteudo.descricao != null) ...[
@@ -244,17 +200,13 @@ class _ConteudosPageState extends State<ConteudosPage> {
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
-                        height: 1.3,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textLight,
-            ),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textLight),
           ],
         ),
       ),

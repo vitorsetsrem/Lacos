@@ -4,6 +4,8 @@ class UsuariaModel {
   final int? idade;
   final String email;
   final String? faseDaVida;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   UsuariaModel({
     required this.id,
@@ -11,15 +13,23 @@ class UsuariaModel {
     this.idade,
     required this.email,
     this.faseDaVida,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory UsuariaModel.fromJson(Map<String, dynamic> json) {
     return UsuariaModel(
       id: json['id'] as String,
-      nome: json['nome'] as String,
+      nome: json['nome'] as String? ?? '',
       idade: json['idade'] as int?,
-      email: json['email'] as String,
+      email: json['email'] as String? ?? '',
       faseDaVida: json['fase_da_vida'] as String?,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'])
+          : null,
     );
   }
 
@@ -34,18 +44,18 @@ class UsuariaModel {
   }
 
   UsuariaModel copyWith({
-    String? id,
     String? nome,
     int? idade,
-    String? email,
     String? faseDaVida,
   }) {
     return UsuariaModel(
-      id: id ?? this.id,
+      id: id,
       nome: nome ?? this.nome,
       idade: idade ?? this.idade,
-      email: email ?? this.email,
+      email: email,
       faseDaVida: faseDaVida ?? this.faseDaVida,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 }

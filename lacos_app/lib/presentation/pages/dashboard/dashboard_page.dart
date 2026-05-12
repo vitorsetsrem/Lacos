@@ -1,128 +1,203 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/legal_disclaimer.dart';
+import '../../../data/datasources/supabase_datasource.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  late final SupabaseDatasource _datasource;
+  int _totalCiclos = 0;
+  int _totalSintomas = 0;
+  int _totalLembretes = 0;
+  bool _isLoading = true;
+
+  final List<String> _dicas = [
+    'Beba pelo menos 2 litros de água por dia para manter seu corpo hidratado.',
+    'Pratique atividade física regularmente — caminhadas de 30 min já fazem diferença!',
+    'Durma pelo menos 7 horas por noite para manter a saúde hormonal.',
+    'Reserve um tempo para você todos os dias, mesmo que sejam 10 minutos.',
+    'Anote seus sintomas — isso ajuda a conhecer melhor seu corpo.',
+    'Mantenha seus exames preventivos em dia. O Papanicolau salva vidas!',
+    'Respire fundo e solte devagar. Pequenas pausas aliviam o estresse.',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _datasource = SupabaseDatasource(Supabase.instance.client);
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final ciclos = await _datasource.getCiclos(user.id);
+      final sintomas = await _datasource.getSintomas(user.id);
+      final lembretes = await _datasource.getLembretes(user.id);
+      _totalCiclos = ciclos.length;
+      _totalSintomas = sintomas.length;
+      _totalLembretes = lembretes.length;
+    } catch (_) {}
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  String get _dicaDoDia {
+    final index = DateTime.now().day % _dicas.length;
+    return _dicas[index];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      shape: BoxShape.circle,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          AppStrings.dashboardTitle,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryPink))
+          : RefreshIndicator(
+              onRefresh: _loadStats,
+              color: AppColors.primaryPink,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Saudação
+                    Text(
+                      'Olá! ${_getGreeting()}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.favorite_rounded,
-                      color: Colors.white,
-                      size: 22,
+                    const SizedBox(height: 20),
+
+                    // Gráfico de Pizza
+                    _buildPieChart(),
+                    const SizedBox(height: 24),
+
+                    // Cards de progresso
+                    Text(
+                      'Seu Resumo',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 12),
+                    Row(
                       children: [
-                        Text(
-                          'Olá! 💜',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
+                        Expanded(
+                          child: _buildProgressCard(
+                            title: AppStrings.preventiva,
+                            value: '$_totalCiclos',
+                            subtitle: 'Ciclos registrados',
+                            icon: Icons.water_drop_rounded,
+                            color: AppColors.primaryPink,
                           ),
                         ),
-                        Text(
-                          AppStrings.dashboardTitle,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildProgressCard(
+                            title: AppStrings.cuidadoComigo,
+                            value: '$_totalSintomas',
+                            subtitle: 'Sintomas anotados',
+                            icon: Icons.favorite_rounded,
+                            color: AppColors.primaryLilas,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.notifications_outlined,
-                      color: AppColors.primaryPink,
+                    const SizedBox(height: 12),
+                    _buildProgressCard(
+                      title: AppStrings.controleRemedios,
+                      value: '$_totalLembretes',
+                      subtitle: 'Lembretes ativos',
+                      icon: Icons.alarm_rounded,
+                      color: AppColors.salmon,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              // Gráfico de pizza
-              _buildChartCard(),
-              const SizedBox(height: 20),
-
-              // Cards de progresso
-              Text(
-                'Meu Progresso',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                    // Dica do dia
+                    _buildDicaDoDia(),
+                    const SizedBox(height: 8),
+                    const LegalDisclaimer(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-
-              _buildProgressCard(
-                icon: Icons.shield_rounded,
-                title: AppStrings.preventiva,
-                subtitle: 'Exames em dia',
-                progress: 0.7,
-                color: AppColors.primaryPink,
-              ),
-              const SizedBox(height: 12),
-
-              _buildProgressCard(
-                icon: Icons.spa_rounded,
-                title: AppStrings.cuidadoComigo,
-                subtitle: 'Autocuidado semanal',
-                progress: 0.45,
-                color: AppColors.primaryLilas,
-              ),
-              const SizedBox(height: 12),
-
-              _buildProgressCard(
-                icon: Icons.medication_rounded,
-                title: AppStrings.controleRemedios,
-                subtitle: 'Medicações do mês',
-                progress: 0.9,
-                color: AppColors.success,
-              ),
-
-              const SizedBox(height: 20),
-
-              // Dica do dia
-              _buildTipCard(),
-
-              const SizedBox(height: 8),
-              const LegalDisclaimer(),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
-  Widget _buildChartCard() {
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Bom dia!';
+    if (hour < 18) return 'Boa tarde!';
+    return 'Boa noite!';
+  }
+
+  Widget _buildPieChart() {
+    final total = _totalCiclos + _totalSintomas + _totalLembretes;
+    if (total == 0) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryPink.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(Icons.pie_chart_outline_rounded,
+                  size: 48, color: AppColors.textLight),
+              const SizedBox(height: 12),
+              Text(
+                'Comece registrando seus ciclos e sintomas para ver seu progresso aqui!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -131,7 +206,7 @@ class DashboardPage extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryPink.withOpacity(0.08),
-            blurRadius: 20,
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
@@ -139,144 +214,90 @@ class DashboardPage extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Visão Geral',
+            'Seus Registros',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           SizedBox(
-            height: 200,
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: PieChart(
-                    PieChartData(
-                      sectionsSpace: 3,
-                      centerSpaceRadius: 40,
-                      sections: [
-                        PieChartSectionData(
-                          value: 70,
-                          title: '70%',
-                          color: AppColors.primaryPink,
-                          radius: 55,
-                          titleStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        PieChartSectionData(
-                          value: 10,
-                          title: '10%',
-                          color: AppColors.primaryLilas,
-                          radius: 50,
-                          titleStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        PieChartSectionData(
-                          value: 20,
-                          title: '20%',
-                          color: AppColors.lightPink,
-                          radius: 50,
-                          titleStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
+            height: 160,
+            child: PieChart(
+              PieChartData(
+                sections: [
+                  PieChartSectionData(
+                    value: _totalCiclos.toDouble(),
+                    color: AppColors.primaryPink,
+                    title: '$_totalCiclos',
+                    titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                    radius: 50,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildLegendItem(
-                        color: AppColors.primaryPink,
-                        label: 'Preventiva',
-                        value: '70%',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildLegendItem(
-                        color: AppColors.primaryLilas,
-                        label: 'Emocional',
-                        value: '10%',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildLegendItem(
-                        color: AppColors.lightPink,
-                        label: 'Autocuidado',
-                        value: '20%',
-                      ),
-                    ],
+                  PieChartSectionData(
+                    value: _totalSintomas.toDouble(),
+                    color: AppColors.primaryLilas,
+                    title: '$_totalSintomas',
+                    titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                    radius: 50,
                   ),
-                ),
-              ],
+                  PieChartSectionData(
+                    value: _totalLembretes.toDouble(),
+                    color: AppColors.salmon,
+                    title: '$_totalLembretes',
+                    titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                    radius: 50,
+                  ),
+                ],
+                sectionsSpace: 3,
+                centerSpaceRadius: 30,
+              ),
             ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildLegend('Ciclos', AppColors.primaryPink),
+              _buildLegend('Sintomas', AppColors.primaryLilas),
+              _buildLegend('Lembretes', AppColors.salmon),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLegendItem({
-    required Color color,
-    required String label,
-    required String value,
-  }) {
+  Widget _buildLegend(String label, Color color) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
+        const SizedBox(width: 4),
+        Text(label,
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
       ],
     );
   }
 
   Widget _buildProgressCard({
-    required IconData icon,
     required String title,
+    required String value,
     required String subtitle,
-    required double progress,
+    required IconData icon,
     required Color color,
   }) {
     return Container(
@@ -295,55 +316,35 @@ class DashboardPage extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  value,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: AppColors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 6,
-                    backgroundColor: color.withOpacity(0.1),
-                    valueColor: AlwaysStoppedAnimation(color),
-                  ),
-                ),
               ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            '${(progress * 100).toInt()}%',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: color,
             ),
           ),
         ],
@@ -351,51 +352,43 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTipCard() {
+  Widget _buildDicaDoDia() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primaryPink.withOpacity(0.1),
-            AppColors.primaryLilas.withOpacity(0.1),
+            AppColors.cream,
+            AppColors.softPink.withOpacity(0.5),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primaryPink.withOpacity(0.2),
-        ),
+        border: Border.all(color: AppColors.lightPink.withOpacity(0.5)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.lightbulb_rounded,
-            color: AppColors.primaryPink,
-            size: 28,
+          Row(
+            children: [
+              Icon(Icons.lightbulb_rounded, color: AppColors.salmon, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Dica do Dia',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Dica do Dia',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryPink,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Beba pelo menos 2 litros de água por dia. A hidratação ajuda no funcionamento hormonal e na saúde da pele.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 8),
+          Text(
+            _dicaDoDia,
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              height: 1.5,
             ),
           ),
         ],

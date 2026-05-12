@@ -60,6 +60,7 @@ class SupabaseDatasource {
   }
 
   Future<void> updateUsuaria(String id, Map<String, dynamic> data) async {
+    data['updated_at'] = DateTime.now().toIso8601String();
     await _client.from('usuarias').update(data).eq('id', id);
   }
 

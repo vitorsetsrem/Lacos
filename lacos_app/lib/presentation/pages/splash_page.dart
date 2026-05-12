@@ -22,21 +22,15 @@ class _SplashPageState extends State<SplashPage>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 1500),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
     _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
     );
 
     _controller.forward();
@@ -45,13 +39,11 @@ class _SplashPageState extends State<SplashPage>
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const InitialPage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
+            pageBuilder: (_, __, ___) => const InitialPage(),
+            transitionsBuilder: (_, animation, __, child) {
               return FadeTransition(opacity: animation, child: child);
             },
-            transitionDuration: const Duration(milliseconds: 600),
+            transitionDuration: const Duration(milliseconds: 500),
           ),
         );
       }
@@ -68,64 +60,65 @@ class _SplashPageState extends State<SplashPage>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppColors.backgroundGradient,
         ),
-        child: Center(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnimation.value,
-                child: Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo - Laço em forma de coração
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: AppColors.primaryGradient,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryPink.withOpacity(0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.favorite_rounded,
-                          size: 60,
-                          color: Colors.white,
-                        ),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _fadeAnimation.value,
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: AppColors.primaryGradient,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryPink.withOpacity(0.3),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                      Text(
-                        AppStrings.appName,
-                        style: AppTheme.decorativeTitle.copyWith(
-                          fontSize: 36,
-                        ),
+                      child: const Icon(
+                        Icons.favorite_rounded,
+                        size: 60,
+                        color: Colors.white,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        AppStrings.appSubtitle,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.primaryLilas,
-                          letterSpacing: 0.5,
-                        ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Text(
+                      AppStrings.appName,
+                      style: AppTheme.decorativeTitle.copyWith(
+                        fontSize: 36,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppStrings.appSubtitle,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.primaryLilas,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

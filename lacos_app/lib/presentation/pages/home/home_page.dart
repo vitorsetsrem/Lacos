@@ -5,10 +5,6 @@ import '../dashboard/dashboard_page.dart';
 import '../ciclo/ciclo_page.dart';
 import '../conteudos/conteudos_page.dart';
 import '../perfil/perfil_page.dart';
-import '../lembretes/lembretes_page.dart';
-import '../chat/chat_page.dart';
-import '../apoio/rede_apoio_page.dart';
-import '../analise/analise_ciclo_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = const [
     DashboardPage(),
     CicloPage(),
-    SizedBox(), // placeholder para o botão central
+    SizedBox(), // Placeholder para o botão central
     ConteudosPage(),
     PerfilPage(),
   ];
@@ -34,108 +30,62 @@ class _HomePageState extends State<HomePage> {
       body: _pages[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryPink.withOpacity(0.08),
-              blurRadius: 20,
+              blurRadius: 16,
               offset: const Offset(0, -4),
             ),
           ],
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Icons.dashboard_rounded,
-                  label: AppStrings.dashboard,
-                  index: 0,
-                ),
-                _buildNavItem(
-                  icon: Icons.calendar_month_rounded,
-                  label: AppStrings.meuCiclo,
-                  index: 1,
-                ),
-                _buildCenterButton(),
-                _buildNavItem(
-                  icon: Icons.menu_book_rounded,
-                  label: AppStrings.conteudos,
-                  index: 3,
-                ),
-                _buildNavItem(
-                  icon: Icons.person_rounded,
-                  label: AppStrings.perfil,
-                  index: 4,
-                ),
-              ],
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            if (index == 2) {
+              // Botão central (+) - abre registro rápido
+              _showQuickAddSheet();
+              return;
+            }
+            setState(() => _currentIndex = index);
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.dashboard_rounded),
+              label: AppStrings.dashboard,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final isSelected = _currentIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 64,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 26,
-              color: isSelected ? AppColors.primaryPink : AppColors.textLight,
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.water_drop_rounded),
+              label: AppStrings.meuCiclo,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color:
-                    isSelected ? AppColors.primaryPink : AppColors.textLight,
+            BottomNavigationBarItem(
+              icon: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryPink.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.add_rounded,
+                    color: Colors.white, size: 28),
               ),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.menu_book_rounded),
+              label: AppStrings.conteudos,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person_rounded),
+              label: AppStrings.perfil,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCenterButton() {
-    return GestureDetector(
-      onTap: () {
-        _showQuickAddSheet();
-      },
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: AppColors.primaryGradient,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryPink.withOpacity(0.4),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.add_rounded,
-          size: 32,
-          color: Colors.white,
         ),
       ),
     );
@@ -147,7 +97,7 @@ class _HomePageState extends State<HomePage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => Container(
+      builder: (context) => Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -162,81 +112,57 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Adicionar Registro',
+              'Registro Rápido',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 20),
-            _buildQuickAddOption(
+            _buildQuickOption(
               icon: Icons.water_drop_rounded,
-              label: 'Registrar Ciclo',
+              title: 'Registrar Ciclo',
               color: AppColors.primaryPink,
               onTap: () {
                 Navigator.pop(context);
                 setState(() => _currentIndex = 1);
               },
             ),
-            _buildQuickAddOption(
-              icon: Icons.notifications_active_rounded,
-              label: 'Meus Lembretes',
-              color: AppColors.salmon,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const LembretesPage()));
-              },
-            ),
-            _buildQuickAddOption(
-              icon: Icons.analytics_rounded,
-              label: 'Análise do Ciclo',
+            _buildQuickOption(
+              icon: Icons.favorite_rounded,
+              title: 'Registrar Sintoma',
               color: AppColors.primaryLilas,
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AnaliseCicloPage()));
+                setState(() => _currentIndex = 1);
               },
             ),
-            _buildQuickAddOption(
-              icon: Icons.chat_bubble_rounded,
-              label: 'Perguntas Anônimas',
-              color: AppColors.warning,
+            _buildQuickOption(
+              icon: Icons.alarm_rounded,
+              title: 'Criar Lembrete',
+              color: AppColors.salmon,
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const ChatPage()));
+                setState(() => _currentIndex = 4);
               },
             ),
-            _buildQuickAddOption(
-              icon: Icons.volunteer_activism_rounded,
-              label: 'Rede de Apoio',
-              color: AppColors.success,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const RedeApoioPage()));
-              },
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickAddOption({
+  Widget _buildQuickOption({
     required IconData icon,
-    required String label,
+    required String title,
     required Color color,
     required VoidCallback onTap,
   }) {
     return ListTile(
       onTap: onTap,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       leading: Container(
         width: 44,
         height: 44,
@@ -247,16 +173,13 @@ class _HomePageState extends State<HomePage> {
         child: Icon(icon, color: color),
       ),
       title: Text(
-        label,
+        title,
         style: TextStyle(
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
       ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: AppColors.textLight,
-      ),
+      trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textLight),
     );
   }
 }
